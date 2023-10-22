@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/koishi-plugin-wife?style=flat-square)](https://www.npmjs.com/package/koishi-plugin-wife)
 
-纯随机的简单今日老婆插件，随机抽一个群友当你的今日老婆。
+一个 [Hoshino](https://github.com/Ice9Coffee/HoshinoBot) 插件的 [Koishi](https://koishi.chat) 实现。纯随机的简单今日老婆插件，随机抽一个群友当你的今日老婆。
 
 ## 用法
 
