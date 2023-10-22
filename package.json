@@ -1,6 +1,6 @@
 {
   "name": "koishi-plugin-wife",
-  "description": "纯随机的简单今日老婆插件",
+  "description": "纯随机的今日老婆插件",
   "version": "0.0.1",
   "contributors": [
     "TTsdzb <ttsdzb@outlook.com>"
