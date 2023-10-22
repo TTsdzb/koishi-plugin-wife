@@ -5,10 +5,10 @@
   "contributors": [
     "TTsdzb <ttsdzb@outlook.com>"
   ],
-  "homepage": "https://github.com/TTsdzb/koishi-plugin-maimaidx",
+  "homepage": "https://github.com/TTsdzb/koishi-plugin-wife",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TTsdzb/koishi-plugin-maimaidx.git"
+    "url": "git+https://github.com/TTsdzb/koishi-plugin-wife.git"
   },
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
