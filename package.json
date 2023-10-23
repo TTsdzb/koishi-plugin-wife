@@ -24,7 +24,8 @@
     "plugin"
   ],
   "peerDependencies": {
-    "koishi": "^4.15.1"
+    "koishi": "^4.15.1",
+    "koishi-plugin-cron": "^2.0.5"
   },
   "koishi": {
     "service": {
