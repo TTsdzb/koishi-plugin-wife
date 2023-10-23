@@ -133,7 +133,7 @@ export function apply(ctx: Context, config: Config) {
       await session.bot.getGuildMemberList(session.guildId)
     ).data.filter(
       (value) =>
-        (config.allowNtr || !(value.user.id in wifes)) &&
+        (config.allowNtr || !wifes.includes(value.user.id)) &&
         !value.user.isBot &&
         value.user.id !== session.bot.selfId && // user.isBot sometimes doesn't work
         (config.allowDaffodil || value.user.id !== session.userId)
