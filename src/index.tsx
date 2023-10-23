@@ -1,4 +1,4 @@
-import { Context, Schema, Universal, h } from "koishi";
+import { Bot, Context, Schema, Universal, h } from "koishi";
 import {} from "koishi-plugin-cron";
 
 export const name = "wife";
@@ -59,6 +59,31 @@ function buildMessage(userId: string, wife: Universal.GuildMember): h {
       {wife.name ? wife.name : wife.user.name} ({wife.user.id})
     </>
   );
+}
+
+/**
+ * Get all member of a guild.
+ *
+ * The API of bot returns paged data. Use this function
+ * to get a full set of data.
+ * @param bot Bot object of the session
+ * @param guildId Id of the target guild
+ * @returns All members of the target guild
+ */
+async function getAllGuildMember(
+  bot: Bot,
+  guildId: string
+): Promise<Universal.GuildMember[]> {
+  let members: Universal.GuildMember[] = [];
+  // Get the first page
+  let membersPage = await bot.getGuildMemberList(guildId);
+  members = [...members, ...membersPage.data];
+  // If there are more pages, get them
+  while (membersPage.next) {
+    membersPage = await bot.getGuildMemberList(guildId, membersPage.next);
+    members = [...members, ...membersPage.data];
+  }
+  return members;
 }
 
 export function apply(ctx: Context, config: Config) {
@@ -130,8 +155,8 @@ export function apply(ctx: Context, config: Config) {
     ).map((value) => value.memberId2);
     // Get members that are available to be one's wife.
     const members = (
-      await session.bot.getGuildMemberList(session.guildId)
-    ).data.filter(
+      await getAllGuildMember(session.bot, session.guildId)
+    ).filter(
       (value) =>
         (config.allowNtr || !wifes.includes(value.user.id)) &&
         !value.user.isBot &&
