@@ -1,4 +1,4 @@
-import { Context, Schema, Universal } from "koishi";
+import { Context, Schema, Universal, h } from "koishi";
 import {} from "koishi-plugin-cron";
 
 export const name = "wife";
@@ -47,12 +47,12 @@ export interface Wife {
  * @param wife The member's wife
  * @returns Message to return
  */
-function buildMessage(userId: string, wife: Universal.GuildMember) {
+function buildMessage(userId: string, wife: Universal.GuildMember): h {
   return (
     <>
       <at id={userId} />
       <br />
-      <i18n path="messages.todaysWifeIs" />
+      <i18n path="commands.wife.messages.todaysWifeIs" />
       <br />
       <image url={wife.user.avatar} />
       <br />
@@ -98,7 +98,7 @@ export function apply(ctx: Context, config: Config) {
     if (!session.guildId)
       return (
         <>
-          <i18n path="messages.pleaseUseInGuilds" />
+          <i18n path="commands.wife.messages.pleaseUseInGuilds" />
         </>
       );
 
@@ -143,7 +143,7 @@ export function apply(ctx: Context, config: Config) {
       return (
         <>
           <at id={session.userId} />
-          <i18n path="messages.youHaveNoWife" />
+          <i18n path="commands.wife.messages.youHaveNoWife" />
         </>
       );
     // Pick a member to be one's wife.
