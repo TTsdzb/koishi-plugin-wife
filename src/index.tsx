@@ -8,6 +8,8 @@ export interface Config {
   tableCleanupTime: number;
   allowDaffodil: boolean;
   allowNtr: boolean;
+  allowBots: boolean;
+  allowSelf: boolean;
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -28,6 +30,12 @@ export const Config: Schema<Config> = Schema.intersect([
     allowNtr: Schema.boolean()
       .default(false)
       .description("允许随机到其他人的老婆。"),
+    allowBots: Schema.boolean()
+      .default(false)
+      .description("允许随机到平台标注为机器人的账号（除了自身）。"),
+    allowSelf: Schema.boolean()
+      .default(false)
+      .description("允许随机到Bot自身账号。"),
   }).description("随机过滤设置"),
 ]);
 
@@ -159,8 +167,10 @@ export function apply(ctx: Context, config: Config) {
     ).filter(
       (value) =>
         (config.allowNtr || !wifes.includes(value.user.id)) &&
-        !value.user.isBot &&
-        value.user.id !== session.bot.selfId && // user.isBot sometimes doesn't work
+        (value.user.id === session.bot.selfId || // If the member is self, let the next expression handle it
+          config.allowBots ||
+          !value.user.isBot) &&
+        (config.allowSelf || value.user.id !== session.bot.selfId) &&
         (config.allowDaffodil || value.user.id !== session.userId)
     );
     // Check the array to prevent errors.
