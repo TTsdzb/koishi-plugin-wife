@@ -2,7 +2,7 @@ import { Bot, Context, Schema, Universal, h } from "koishi";
 import {} from "koishi-plugin-cron";
 
 export const name = "wife";
-export const using = ["database", "cron"];
+export const using = ["database", "__cron__"];
 
 export interface Config {
   tableCleanupTime: number;
