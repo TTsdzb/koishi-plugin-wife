@@ -85,11 +85,11 @@ async function getAllGuildMember(
   let members: Universal.GuildMember[] = [];
   // Get the first page
   let membersPage = await bot.getGuildMemberList(guildId);
-  members = [...members, ...membersPage.data];
+  members = members.concat(membersPage.data);
   // If there are more pages, get them
   while (membersPage.next) {
     membersPage = await bot.getGuildMemberList(guildId, membersPage.next);
-    members = [...members, ...membersPage.data];
+    members = members.concat(membersPage.data);
   }
   return members;
 }
@@ -122,10 +122,10 @@ export function apply(ctx: Context, config: Config) {
 
   // Register the command
   ctx.command("wife").action(async ({ session }) => {
-    // We use `session.guildId` and `session.platform` to identify
-    // guilds, and session.userId to identify members. The result is
-    // designed to be different in different guilds, so there's no
-    // need to bind a user between different platforms.
+    // We use `session.gid` to identify guilds, and session.userId to
+    // identify members. The result is designed to be different in
+    // different guilds, so there's no need to bind a user between
+    // different platforms.
 
     // Check if the command is triggered in guilds.
     if (!session.guildId)
@@ -137,8 +137,8 @@ export function apply(ctx: Context, config: Config) {
 
     // Query the database for result generated earlier.
     const existedWife = await ctx.database.get("wife_of_the_day", {
-      guildId: [`${session.platform}:${session.guildId}`],
-      memberId1: [session.userId],
+      guildId: session.gid,
+      memberId1: session.userId,
     });
 
     // If there is pre-generated result, return it.
@@ -156,7 +156,7 @@ export function apply(ctx: Context, config: Config) {
       await ctx.database.get(
         "wife_of_the_day",
         {
-          guildId: `${session.platform}:${session.guildId}`,
+          guildId: session.gid,
         },
         ["memberId2"]
       )
@@ -185,7 +185,7 @@ export function apply(ctx: Context, config: Config) {
     const wife = members[Math.floor(Math.random() * members.length)];
     // Store the wife to database for later query.
     await ctx.database.create("wife_of_the_day", {
-      guildId: `${session.platform}:${session.guildId}`,
+      guildId: session.gid,
       memberId1: session.userId,
       memberId2: wife.user.id,
     });
