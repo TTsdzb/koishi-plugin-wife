@@ -4,7 +4,7 @@
 
 一个 [Hoshino](https://github.com/Ice9Coffee/HoshinoBot) 插件的 [Koishi](https://koishi.chat) 实现。纯随机的简单今日老婆插件，随机抽一个群友当你的今日老婆。
 
-该插件只会随机抽取一个群友，在人多的群聊里很容易出现不认识的成员变成老婆的情况。如果你很介意这种情况，可以尝试 [`marry` 插件](https://github.com/koishijs/koishi-plugin-marry)。本插件的优势在于不需要 `messages` 服务，对数据库性能要求较小。
+该插件只会随机抽取一个群友，在人多的群聊里很容易出现不认识的成员变成老婆的情况。如果你很介意这种情况，可以尝试 [`waifu` 插件](https://github.com/idanran/koishi-plugin-waifu)。本插件的优势在于无需记录成员活跃状态。
 
 ## 用法
 
