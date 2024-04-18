@@ -1,8 +1,8 @@
 import { Bot, Context, Schema, Universal, h } from "koishi";
-import {} from "koishi-plugin-cron";
+import {} from "@koishijs/cache";
 
 export const name = "wife";
-export const using = ["database", "cron"];
+export const using = ["cache"];
 
 export interface Config {
   tableCleanupTime: number;
@@ -19,9 +19,7 @@ export const Config: Schema<Config> = Schema.intersect([
       .max(23)
       .step(1)
       .default(0)
-      .description(
-        "在何时清空数据库（也就是到几点算作第二天）。以24小时制计。"
-      ),
+      .description("数据在何时失效（也就是到几点算作第二天）。以24小时制计。"),
   }).description("存储设置"),
   Schema.object({
     allowDaffodil: Schema.boolean()
@@ -39,14 +37,10 @@ export const Config: Schema<Config> = Schema.intersect([
   }).description("随机过滤设置"),
 ]);
 
-/**
- * Store mappings between guild members.
- */
-export interface Wife {
-  id: number;
-  guildId: string;
-  memberId1: string;
-  memberId2: string;
+declare module "@koishijs/cache" {
+  interface Tables {
+    [key: `wife_of_the_day_${string}`]: string;
+  }
 }
 
 /**
@@ -94,31 +88,24 @@ async function getAllGuildMember(
   return members;
 }
 
+/**
+ * Calculate `maxAge` for a cache entry.
+ * @param cleanupTime Preset cleanup time
+ * @returns Proper age of the cache entry
+ */
+function getAge(cleanupTime: number): number {
+  const currentTime = Date.now();
+
+  const tomorrow = new Date(currentTime + 24 * 60 * 60 * 1000);
+  tomorrow.setHours(cleanupTime, 0, 0, 0);
+  const tomorrowTime = tomorrow.getTime();
+
+  return tomorrowTime - currentTime;
+}
+
 export function apply(ctx: Context, config: Config) {
   // Register i18n
   ctx.i18n.define("zh-CN", require("./locales/zh-CN"));
-
-  // Extend a table for storage
-  ctx.model.extend(
-    "wife_of_the_day",
-    {
-      id: "unsigned",
-      guildId: "string",
-      memberId1: "string",
-      memberId2: "string",
-    },
-    {
-      primary: "id",
-      autoInc: true,
-    }
-  );
-
-  // Register a cron to clean the table for the next day.
-  ctx.cron(`0 ${config.tableCleanupTime} * * *`, async () => {
-    await ctx.database.remove("wife_of_the_day", {
-      id: { $gte: 0 },
-    });
-  });
 
   // Register the command
   ctx.command("wife").action(async ({ session }) => {
@@ -136,31 +123,27 @@ export function apply(ctx: Context, config: Config) {
       );
 
     // Query the database for result generated earlier.
-    const existedWife = await ctx.database.get("wife_of_the_day", {
-      guildId: session.gid,
-      memberId1: session.userId,
-    });
+    const existedWife = await ctx.cache.get(
+      `wife_of_the_day_${session.gid}`,
+      session.userId
+    );
 
     // If there is pre-generated result, return it.
-    if (existedWife.length > 0) {
+    if (existedWife) {
       const wife = await session.bot.getGuildMember(
         session.guildId,
-        existedWife[0].memberId2
+        existedWife
       );
       return buildMessage(session.userId, wife);
     }
 
     // There is no generated result. We should generate a new one.
     // Query members that already be someone's wife.
-    const wifes = (
-      await ctx.database.get(
-        "wife_of_the_day",
-        {
-          guildId: session.gid,
-        },
-        ["memberId2"]
-      )
-    ).map((value) => value.memberId2);
+    const wifeAsyncIterator = ctx.cache.values(
+      `wife_of_the_day_${session.gid}`
+    );
+    const wifes = [];
+    for await (const wife of wifeAsyncIterator) wifes.push(wife);
     // Get members that are available to be one's wife.
     const members = (
       await getAllGuildMember(session.bot, session.guildId)
@@ -184,18 +167,13 @@ export function apply(ctx: Context, config: Config) {
     // Pick a member to be one's wife.
     const wife = members[Math.floor(Math.random() * members.length)];
     // Store the wife to database for later query.
-    await ctx.database.create("wife_of_the_day", {
-      guildId: session.gid,
-      memberId1: session.userId,
-      memberId2: wife.user.id,
-    });
+    await ctx.cache.set(
+      `wife_of_the_day_${session.gid}`,
+      session.userId,
+      wife.user.id,
+      getAge(config.tableCleanupTime)
+    );
     // Build and return the message
     return buildMessage(session.userId, wife);
   });
-}
-
-declare module "koishi" {
-  interface Tables {
-    wife_of_the_day: Wife;
-  }
 }

@@ -22,15 +22,16 @@
     "koishi",
     "plugin"
   ],
+  "devDependencies": {
+    "@koishijs/cache": "^2.1.0"
+  },
   "peerDependencies": {
-    "koishi": "^4.16.2",
-    "koishi-plugin-cron": "^3.1.0"
+    "koishi": "^4.16.2"
   },
   "koishi": {
     "service": {
       "required": [
-        "database",
-        "cron"
+        "cache"
       ],
       "optional": [],
       "implements": []
