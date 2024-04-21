@@ -2,7 +2,7 @@ import { Bot, Context, Schema, Universal, h } from "koishi";
 import {} from "@koishijs/cache";
 
 export const name = "wife";
-export const using = ["cache"];
+export const inject = ["cache"];
 
 export interface Config {
   tableCleanupTime: number;
